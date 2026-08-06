@@ -1,4 +1,4 @@
-# DeniAD
+﻿# DeniAD
 
 DeniAD is a log anomaly detection model for non-stationary software systems.
 It learns normal log-sequence behavior by jointly modeling the next event type
@@ -34,21 +34,21 @@ pip install -r requirements.txt
 
 ```text
 .
-├── main.py                         # training and evaluation entry point
-├── transformer/                    # event-history encoder and prediction heads
-├── flow_matching/                  # conditional flow-matching components
-├── preprocess/                     # sequence data loader
-├── scripts/
-│   ├── labeled/                    # public log benchmark runner
-│   ├── rq1/                        # five-dataset launch script
-│   ├── rq2/                        # type/time modeling variants
-│   └── rq4/                        # run-level diagnosis and component ablation
-├── dataset/
-│   ├── prepare/                    # public log preprocessing
-│   ├── public_logs/                # public dataset source information
-│   ├── trainticket_collection/     # Train-Ticket data construction pipeline
-│   └── trainticket_processed/      # processed Train-Ticket dataset archive
-└── configs/trainticket_collection/ # workload and scenario configurations
+|-- main.py                         # training and evaluation entry point
+|-- transformer/                    # event-history encoder and prediction heads
+|-- flow_matching/                  # conditional flow-matching components
+|-- preprocess/                     # sequence data loader
+|-- scripts/
+|   |-- labeled/                    # public log benchmark runner
+|   |-- rq1/                        # five-dataset launch script
+|   |-- rq2/                        # type/time modeling variants
+|   `-- rq4/                        # run-level diagnosis and component ablation
+|-- dataset/
+|   |-- prepare/                    # public log preprocessing
+|   |-- public_logs/                # public dataset source information
+|   |-- trainticket_collection/     # Train-Ticket data construction pipeline
+|   `-- trainticket_processed/      # processed Train-Ticket dataset archive
+`-- configs/trainticket_collection/ # workload and scenario configurations
 ```
 
 ## Public log datasets
@@ -72,131 +72,16 @@ The generated files are stored as:
 
 ```text
 data/
-├── labeled_hdfs/{train,dev,test}.pkl
-├── labeled_bgl/{train,dev,test}.pkl
-├── labeled_thunderbird/{train,dev,test}.pkl
-├── labeled_spirit/{train,dev,test}.pkl
-└── labeled_liberty/{train,dev,test}.pkl
+|-- labeled_hdfs/{train,dev,test}.pkl
+|-- labeled_bgl/{train,dev,test}.pkl
+|-- labeled_thunderbird/{train,dev,test}.pkl
+|-- labeled_spirit/{train,dev,test}.pkl
+`-- labeled_liberty/{train,dev,test}.pkl
 ```
 
-Train and evaluate DeniAD on the five datasets:
 
-```bash
-mkdir -p logs
 
-RUN_TAG=public_logs_seed2023
 
-nohup env \
-  DEVICE=0 \
-  SEED=2023 \
-  DATASETS="bgl hdfs thunderbird spirit liberty" \
-  RUN_TRAIN=1 \
-  RUN_ANOMALY=1 \
-  RUN_RELIABILITY=0 \
-  DATASET_ADAPTIVE_DETECTION=0 \
-  EVAL_SEGMENT_THRESHOLD_SWEEP=0 \
-  CKPT_ROOT="./checkpoints/public_logs/$RUN_TAG" \
-  RESULT_ROOT="./results/public_logs/$RUN_TAG" \
-  RUN_TAG="$RUN_TAG" \
-  bash scripts/rq1/run_rq1_five_datasets.sh \
-  > "logs/${RUN_TAG}.log" 2>&1 &
-```
-
-Monitor the run:
-
-```bash
-tail -f "logs/${RUN_TAG}.log"
-```
-
-The aggregated metrics are written to:
-
-```text
-results/public_logs/<run-tag>/summary.csv
-```
-
-## Type and time modeling variants
-
-The repository provides four configurations:
-
-- `Type-only`: models the conditional event-type distribution;
-- `Time-only`: models the inter-event-time distribution;
-- `Independent`: models type and time independently;
-- `OursJoin`: models the time distribution conditioned on event history and
-  event type.
-
-Run the complete comparison with:
-
-```bash
-bash scripts/rq2/run_all_rq2_benchmarks.sh
-```
-
-Dataset-specific launch scripts and result summarizers are available under
-`scripts/rq2/`.
-
-## Train-Ticket Expected/Unexpected drift data
-
-Extract the processed dataset from the repository root:
-
-```bash
-unzip \
-  dataset/trainticket_processed/data_cloud_expected_unexpected_expanded100_v0_4.zip \
-  -d .
-```
-
-Validate the dataset:
-
-```bash
-python dataset/trainticket_processed/validate_dataset.py
-```
-
-The validation output should report:
-
-```text
-run counts: {'train': 30, 'dev': 38, 'test': 100}
-sequence counts: {'train': 879, 'dev': 1206, 'test': 2934}
-dim_process: 699
-```
-
-The run-level split contains 30 normal reference runs, 38 development runs,
-and 100 test runs. The test split contains 50 Expected and 50 Unexpected runs.
-
-Train the model, select run-level thresholds on the development split, and
-evaluate the frozen configuration on the test split:
-
-```bash
-mkdir -p logs
-
-RUN_TAG=trainticket_seed2023
-RESULT_ROOT="./results/trainticket/$RUN_TAG"
-
-nohup env \
-  DEVICE=0 \
-  SEED=2023 \
-  RUN_TRAIN=1 \
-  RQ4_CANDIDATE_MODE=score \
-  RUN_LEVEL_STATE_VETO=off \
-  ABSENCE_CONTEXT_MODE=hybrid \
-  ABSENCE_REFERENCE_PATH="" \
-  RESULT_ROOT="$RESULT_ROOT" \
-  RUN_TAG="$RUN_TAG" \
-  bash scripts/rq4/run_rq4_expanded100_v04_formal.sh \
-  > "logs/${RUN_TAG}.log" 2>&1 &
-```
-
-Monitor the run:
-
-```bash
-tail -f "logs/${RUN_TAG}.log"
-```
-
-The main run-level output is stored under:
-
-```text
-results/trainticket/<run-tag>/test/
-```
-
-This directory contains event-level predictions, run-level predictions,
-confusion matrices, and the binary Expected/Unexpected summary table.
 
 ## Component ablation
 
@@ -211,21 +96,29 @@ ABSENCE_REFERENCE_PATH="" \
 bash scripts/rq4/run_rq3_core_ablation.sh
 ```
 
-## Dataset construction
+## Train-Ticket dataset construction
 
-The scripts under `dataset/trainticket_collection/` reproduce the data
-collection and conversion pipeline for a deployed Train-Ticket Kubernetes
-system. The main stages are:
+The dataset was collected from the open-source Train-Ticket microservice system
+deployed on Kubernetes. Each run contains a stable pre-change period, one
+controlled software or operational change, and a post-change observation
+period under a fixed workload profile. Logs and Kubernetes runtime states are
+collected throughout the run.
 
-1. generate and freeze a software-change scenario plan;
-2. execute each scenario and collect logs and Kubernetes state;
-3. assign semantic labels and run quality checks;
-4. create the train/dev/test manifest;
-5. convert valid runs into model-ready event sequences.
+Expected runs contain benign system evolution, such as compatible or
+low-impact configuration changes, resource scaling, workload changes, pod
+migration, and successful no-op redeployment. Unexpected runs contain harmful
+changes, including service termination, invalid dependency ports, resource
+limits, connection-pool exhaustion, and loss of weakly observable services.
+Runs that fail collection, parsing, oracle validation, or quality checks are
+excluded before the dataset split is frozen.
 
-Collection requires `kubectl`, a running Train-Ticket deployment, and the
-workload endpoint supplied through `SCWARN_BASE_URL`. Detailed commands are in
-`dataset/trainticket_collection/README.md`.
+The released dataset contains 30 normal reference runs for training, 38 runs
+for development (22 Expected and 16 Unexpected), and 100 runs for testing
+(50 Expected and 50 Unexpected). Logs are grouped by run, service, and execution
+phase, parsed into event types, and converted into sequences containing event
+types and inter-event times. The collection and conversion scripts are under
+`dataset/trainticket_collection/`, and the processed dataset is provided under
+`dataset/trainticket_processed/`.
 
 ## Data format
 
@@ -256,4 +149,3 @@ The development and test files use the corresponding `dev` and `test` keys.
 If you use DeniAD or the processed Train-Ticket dataset, please cite the
 associated paper. The final BibTeX entry and archived software DOI will be
 added after publication.
-

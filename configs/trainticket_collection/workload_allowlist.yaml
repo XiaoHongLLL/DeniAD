@@ -1,0 +1,262 @@
+api_base: http://localhost:18888
+notes:
+  - TT-Core-16 Pilot only allows API paths whose expected downstream services are deployed.
+  - Latency observed through port-forward is recorded for diagnostics only, not for SLO labels.
+  - Authenticated order/contact APIs are deployed but not called by the current unauthenticated functional Oracle.
+  - Disabled operations must not be included in workload generation or drift labels.
+deployment_core_services:
+  - ts-auth-service
+  - ts-basic-service
+  - ts-config-service
+  - ts-contacts-service
+  - ts-gateway-service
+  - ts-order-other-service
+  - ts-order-service
+  - ts-price-service
+  - ts-route-service
+  - ts-seat-service
+  - ts-station-service
+  - ts-train-service
+  - ts-travel-service
+  - ts-travel2-service
+  - ts-ui-dashboard
+  - ts-user-service
+core_api_services:
+  - ts-auth-service
+  - ts-basic-service
+  - ts-config-service
+  - ts-gateway-service
+  - ts-price-service
+  - ts-route-service
+  - ts-seat-service
+  - ts-station-service
+  - ts-train-service
+  - ts-travel-service
+  - ts-travel2-service
+  - ts-user-service
+deployed_but_not_oracle_services:
+  - ts-contacts-service
+  - ts-order-other-service
+  - ts-order-service
+  - ts-ui-dashboard
+supporting_services:
+  - nacos
+  - rabbitmq
+  - scwarn-pilot-mysql
+excluded_from_api_closure:
+  - ts-ui-dashboard
+operations:
+  - id: auth_hello
+    operation: auth smoke
+    method: GET
+    path: /api/v1/auth/hello
+    expected_status: 200
+    expected_contains: hello
+    expected_services:
+      - ts-gateway-service
+      - ts-auth-service
+    enabled: true
+    slo_source: functional_only
+
+  - id: user_hello
+    operation: user smoke
+    method: GET
+    path: /api/v1/userservice/users/hello
+    expected_status: 200
+    expected_contains: Hello
+    expected_services:
+      - ts-gateway-service
+      - ts-user-service
+    enabled: true
+    slo_source: functional_only
+
+  - id: basic_welcome
+    operation: basic service smoke
+    method: GET
+    path: /api/v1/basicservice/welcome
+    expected_status: 200
+    expected_contains: Welcome to [ Basic Service ]
+    expected_services:
+      - ts-gateway-service
+      - ts-basic-service
+    enabled: true
+    slo_source: functional_only
+
+  - id: config_welcome
+    operation: config service smoke
+    method: GET
+    path: /api/v1/configservice/welcome
+    expected_status: 200
+    expected_contains: Welcome
+    expected_services:
+      - ts-gateway-service
+      - ts-config-service
+    enabled: true
+    slo_source: functional_only
+
+  - id: contacts_welcome
+    operation: contacts service smoke
+    method: GET
+    path: /api/v1/contactservice/contacts/welcome
+    expected_status: 200
+    expected_contains: Welcome
+    expected_services:
+      - ts-gateway-service
+      - ts-contacts-service
+    enabled: false
+    disabled_reason: requires JWT role and is excluded until tokenized business workflow is added
+    slo_source: functional_only
+
+  - id: order_welcome
+    operation: order service smoke
+    method: GET
+    path: /api/v1/orderservice/welcome
+    expected_status: 200
+    expected_contains: Welcome
+    expected_services:
+      - ts-gateway-service
+      - ts-order-service
+    enabled: false
+    disabled_reason: requires JWT role; /welcome is not permitAll in service security config
+    slo_source: functional_only
+
+  - id: order_other_welcome
+    operation: order other service smoke
+    method: GET
+    path: /api/v1/orderOtherService/welcome
+    expected_status: 200
+    expected_contains: Welcome
+    expected_services:
+      - ts-gateway-service
+      - ts-order-other-service
+    enabled: false
+    disabled_reason: requires JWT role; /welcome is not permitAll in service security config
+    slo_source: functional_only
+
+  - id: price_welcome
+    operation: price service smoke
+    method: GET
+    path: /api/v1/priceservice/prices/welcome
+    expected_status: 200
+    expected_contains: Welcome to [ Price Service ]
+    expected_services:
+      - ts-gateway-service
+      - ts-price-service
+    enabled: true
+    slo_source: functional_only
+
+  - id: route_welcome
+    operation: route service smoke
+    method: GET
+    path: /api/v1/routeservice/welcome
+    expected_status: 200
+    expected_contains: Welcome to [ Route Service ]
+    expected_services:
+      - ts-gateway-service
+      - ts-route-service
+    enabled: true
+    slo_source: functional_only
+
+  - id: seat_welcome
+    operation: seat service smoke
+    method: GET
+    path: /api/v1/seatservice/welcome
+    expected_status: 200
+    expected_contains: Welcome
+    expected_services:
+      - ts-gateway-service
+      - ts-seat-service
+    enabled: true
+    slo_source: functional_only
+
+  - id: station_welcome
+    operation: station service smoke
+    method: GET
+    path: /api/v1/stationservice/welcome
+    expected_status: 200
+    expected_contains: Welcome to [ Station Service ]
+    expected_services:
+      - ts-gateway-service
+      - ts-station-service
+    enabled: true
+    slo_source: functional_only
+
+  - id: train_welcome
+    operation: train service smoke
+    method: GET
+    path: /api/v1/trainservice/trains/welcome
+    expected_status: 200
+    expected_contains: Welcome to [ Train Service ]
+    expected_services:
+      - ts-gateway-service
+      - ts-train-service
+    enabled: true
+    slo_source: functional_only
+
+  - id: travel_welcome
+    operation: travel service smoke
+    method: GET
+    path: /api/v1/travelservice/welcome
+    expected_status: 200
+    expected_contains: Welcome
+    expected_services:
+      - ts-gateway-service
+      - ts-travel-service
+    enabled: true
+    slo_source: functional_only
+
+  - id: travel2_welcome
+    operation: travel2 service smoke
+    method: GET
+    path: /api/v1/travel2service/welcome
+    expected_status: 200
+    expected_contains: Welcome
+    expected_services:
+      - ts-gateway-service
+      - ts-travel2-service
+    enabled: true
+    slo_source: functional_only
+
+  - id: train_query_all
+    operation: query trains
+    method: GET
+    path: /api/v1/trainservice/trains
+    expected_status: 200
+    expected_services:
+      - ts-gateway-service
+      - ts-train-service
+    enabled: true
+    slo_source: functional_only
+
+  - id: station_query_all
+    operation: query stations
+    method: GET
+    path: /api/v1/stationservice/stations
+    expected_status: 200
+    expected_services:
+      - ts-gateway-service
+      - ts-station-service
+    enabled: true
+    slo_source: functional_only
+
+  - id: route_query_all
+    operation: query routes
+    method: GET
+    path: /api/v1/routeservice/routes
+    expected_status: 200
+    expected_services:
+      - ts-gateway-service
+      - ts-route-service
+    enabled: true
+    slo_source: functional_only
+
+  - id: price_query_all
+    operation: query prices
+    method: GET
+    path: /api/v1/priceservice/prices
+    expected_status: 200
+    expected_services:
+      - ts-gateway-service
+      - ts-price-service
+    enabled: true
+    slo_source: functional_only

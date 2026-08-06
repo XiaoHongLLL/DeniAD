@@ -1,0 +1,331 @@
+{
+  "schema_version": 1,
+  "notes": [
+    "Profiles freeze request mix and random seeds so Baseline, No-op, Expected, and Unexpected runs can be compared without workload leakage.",
+    "W0 is for log observability audit only. Formal Baseline should use W1 or a later frozen business profile.",
+    "W2 is a Markov-style scaffold over currently enabled unauthenticated operations; tokenized business states must be added before using it for formal claims."
+  ],
+  "profiles": [
+    {
+      "id": "W0_log_observability_all",
+      "mode": "round_robin",
+      "description": "Exercise every enabled allowlist operation to audit which APIs naturally emit stdout logs.",
+      "operation_ids": [
+        "auth_hello",
+        "user_hello",
+        "basic_welcome",
+        "config_welcome",
+        "price_welcome",
+        "route_welcome",
+        "seat_welcome",
+        "station_welcome",
+        "train_welcome",
+        "travel_welcome",
+        "travel2_welcome",
+        "train_query_all",
+        "station_query_all",
+        "route_query_all",
+        "price_query_all"
+      ]
+    },
+    {
+      "id": "W1_steady_core",
+      "mode": "weighted_round_robin",
+      "description": "Stable core workload for Baseline/No-op calibration with frozen access logs enabled; query paths dominate, lightweight smoke paths keep service coverage complete.",
+      "operation_weights": {
+        "auth_hello": 1,
+        "user_hello": 1,
+        "basic_welcome": 1,
+        "config_welcome": 1,
+        "price_welcome": 1,
+        "route_welcome": 1,
+        "seat_welcome": 1,
+        "station_welcome": 1,
+        "train_welcome": 1,
+        "travel_welcome": 1,
+        "travel2_welcome": 1,
+        "station_query_all": 3,
+        "route_query_all": 3,
+        "train_query_all": 3,
+        "price_query_all": 3
+      }
+    },
+    {
+      "id": "W1_basic_focus",
+      "mode": "weighted_round_robin",
+      "description": "Reference coverage profile: emphasizes Basic Service normal smoke traffic while retaining core query context.",
+      "operation_weights": {
+        "basic_welcome": 12,
+        "auth_hello": 1,
+        "user_hello": 1,
+        "config_welcome": 1,
+        "price_welcome": 1,
+        "route_welcome": 1,
+        "seat_welcome": 1,
+        "station_welcome": 1,
+        "train_welcome": 1,
+        "station_query_all": 2,
+        "route_query_all": 2,
+        "train_query_all": 2,
+        "price_query_all": 2
+      }
+    },
+    {
+      "id": "W1_config_focus",
+      "mode": "weighted_round_robin",
+      "description": "Reference coverage profile: emphasizes Config Service normal smoke traffic while retaining core query context.",
+      "operation_weights": {
+        "config_welcome": 12,
+        "auth_hello": 1,
+        "user_hello": 1,
+        "basic_welcome": 1,
+        "price_welcome": 1,
+        "route_welcome": 1,
+        "seat_welcome": 1,
+        "station_welcome": 1,
+        "train_welcome": 1,
+        "station_query_all": 2,
+        "route_query_all": 2,
+        "train_query_all": 2,
+        "price_query_all": 2
+      }
+    },
+    {
+      "id": "W1_seat_focus",
+      "mode": "weighted_round_robin",
+      "description": "Reference coverage profile: emphasizes Seat Service normal smoke traffic while retaining core query context.",
+      "operation_weights": {
+        "seat_welcome": 12,
+        "auth_hello": 1,
+        "user_hello": 1,
+        "basic_welcome": 1,
+        "config_welcome": 1,
+        "price_welcome": 1,
+        "route_welcome": 1,
+        "station_welcome": 1,
+        "train_welcome": 1,
+        "station_query_all": 2,
+        "route_query_all": 2,
+        "train_query_all": 2,
+        "price_query_all": 2
+      }
+    },
+    {
+      "id": "W1_station_focus",
+      "mode": "weighted_round_robin",
+      "description": "Reference coverage profile: emphasizes Station Service normal smoke/query traffic while retaining core query context.",
+      "operation_weights": {
+        "station_welcome": 8,
+        "station_query_all": 8,
+        "auth_hello": 1,
+        "user_hello": 1,
+        "basic_welcome": 1,
+        "config_welcome": 1,
+        "price_welcome": 1,
+        "route_welcome": 1,
+        "seat_welcome": 1,
+        "train_welcome": 1,
+        "route_query_all": 2,
+        "train_query_all": 2,
+        "price_query_all": 2
+      }
+    },
+    {
+      "id": "W1_user_focus",
+      "mode": "weighted_round_robin",
+      "description": "Reference coverage profile: emphasizes User Service normal smoke traffic while retaining core query context.",
+      "operation_weights": {
+        "user_hello": 12,
+        "auth_hello": 1,
+        "basic_welcome": 1,
+        "config_welcome": 1,
+        "price_welcome": 1,
+        "route_welcome": 1,
+        "seat_welcome": 1,
+        "station_welcome": 1,
+        "train_welcome": 1,
+        "station_query_all": 2,
+        "route_query_all": 2,
+        "train_query_all": 2,
+        "price_query_all": 2
+      }
+    },
+    {
+      "id": "W1_ui_reference_mixed",
+      "mode": "weighted_round_robin",
+      "description": "Reference coverage profile for UI-dashboard deployment contexts; no direct UI API is in the unauthenticated oracle, so workload remains mixed core traffic.",
+      "operation_weights": {
+        "auth_hello": 1,
+        "user_hello": 1,
+        "basic_welcome": 1,
+        "config_welcome": 1,
+        "price_welcome": 1,
+        "route_welcome": 1,
+        "seat_welcome": 1,
+        "station_welcome": 1,
+        "train_welcome": 1,
+        "travel_welcome": 1,
+        "travel2_welcome": 1,
+        "station_query_all": 4,
+        "route_query_all": 4,
+        "train_query_all": 4,
+        "price_query_all": 4
+      }
+    },
+    {
+      "id": "W1_price_query_heavy",
+      "mode": "weighted_round_robin",
+      "description": "Operational Expected Drift profile: same allowed APIs and same request rate as W1, but shifts the stable mix toward price, route, and train query paths.",
+      "operation_weights": {
+        "auth_hello": 1,
+        "user_hello": 1,
+        "basic_welcome": 1,
+        "config_welcome": 1,
+        "price_welcome": 1,
+        "route_welcome": 1,
+        "seat_welcome": 1,
+        "station_welcome": 1,
+        "train_welcome": 1,
+        "travel_welcome": 1,
+        "travel2_welcome": 1,
+        "station_query_all": 1,
+        "route_query_all": 6,
+        "train_query_all": 6,
+        "price_query_all": 8
+      }
+    },
+    {
+      "id": "W1_route_query_heavy",
+      "mode": "weighted_round_robin",
+      "description": "Operational Expected Drift profile: same allowed APIs and same request rate as W1, but shifts the stable mix toward route and station query paths.",
+      "operation_weights": {
+        "auth_hello": 1,
+        "user_hello": 1,
+        "basic_welcome": 1,
+        "config_welcome": 1,
+        "price_welcome": 1,
+        "route_welcome": 1,
+        "seat_welcome": 1,
+        "station_welcome": 1,
+        "train_welcome": 1,
+        "travel_welcome": 1,
+        "travel2_welcome": 1,
+        "station_query_all": 6,
+        "route_query_all": 8,
+        "train_query_all": 2,
+        "price_query_all": 2
+      }
+    },
+    {
+      "id": "W1_train_station_query_heavy",
+      "mode": "weighted_round_robin",
+      "description": "Operational Expected Drift profile: same allowed APIs and same request rate as W1, but shifts the stable mix toward train and station query paths.",
+      "operation_weights": {
+        "auth_hello": 1,
+        "user_hello": 1,
+        "basic_welcome": 1,
+        "config_welcome": 1,
+        "price_welcome": 1,
+        "route_welcome": 1,
+        "seat_welcome": 1,
+        "station_welcome": 1,
+        "train_welcome": 1,
+        "travel_welcome": 1,
+        "travel2_welcome": 1,
+        "station_query_all": 7,
+        "route_query_all": 2,
+        "train_query_all": 8,
+        "price_query_all": 2
+      }
+    },
+    {
+      "id": "W2_mixed_business_scaffold",
+      "mode": "markov",
+      "description": "Markov-style scaffold inspired by ADDKG/Locust; still limited to unauthenticated TT-Core operations.",
+      "start_state": "auth_hello",
+      "states": {
+        "auth_hello": {
+          "operation_id": "auth_hello",
+          "transitions": {
+            "station_query_all": 0.5,
+            "train_query_all": 0.3,
+            "user_hello": 0.2
+          }
+        },
+        "user_hello": {
+          "operation_id": "user_hello",
+          "transitions": {
+            "station_query_all": 0.7,
+            "route_query_all": 0.3
+          }
+        },
+        "station_query_all": {
+          "operation_id": "station_query_all",
+          "transitions": {
+            "route_query_all": 0.7,
+            "train_query_all": 0.3
+          }
+        },
+        "route_query_all": {
+          "operation_id": "route_query_all",
+          "transitions": {
+            "train_query_all": 0.5,
+            "price_query_all": 0.4,
+            "station_query_all": 0.1
+          }
+        },
+        "train_query_all": {
+          "operation_id": "train_query_all",
+          "transitions": {
+            "price_query_all": 0.5,
+            "travel_welcome": 0.25,
+            "travel2_welcome": 0.25
+          }
+        },
+        "price_query_all": {
+          "operation_id": "price_query_all",
+          "transitions": {
+            "seat_welcome": 0.5,
+            "route_query_all": 0.25,
+            "station_query_all": 0.25
+          }
+        },
+        "seat_welcome": {
+          "operation_id": "seat_welcome",
+          "transitions": {
+            "station_query_all": 0.4,
+            "route_query_all": 0.4,
+            "auth_hello": 0.2
+          }
+        },
+        "travel_welcome": {
+          "operation_id": "travel_welcome",
+          "transitions": {
+            "station_query_all": 0.6,
+            "route_query_all": 0.4
+          }
+        },
+        "travel2_welcome": {
+          "operation_id": "travel2_welcome",
+          "transitions": {
+            "station_query_all": 0.6,
+            "route_query_all": 0.4
+          }
+        }
+      }
+    },
+    {
+      "id": "W3_high_load",
+      "mode": "weighted_random",
+      "description": "Later robustness profile only; not for first-round Expected/Unexpected label construction.",
+      "operation_weights": {
+        "station_query_all": 2,
+        "route_query_all": 3,
+        "train_query_all": 3,
+        "price_query_all": 3,
+        "travel_welcome": 1,
+        "travel2_welcome": 1
+      }
+    }
+  ]
+}

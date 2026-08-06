@@ -1,0 +1,15 @@
+name: deniad
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.9
+  - numpy=1.26.4
+  - pytorch=2.5.1
+  - pytorch-cuda=12.1
+  - tqdm=4.67.1
+  - pip
+  - pip:
+      - torchdiffeq==0.2.5
+

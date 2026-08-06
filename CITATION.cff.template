@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this artifact, please cite the associated paper and software release."
+title: "DeniAD: code and data artifact"
+type: software
+authors:
+  - family-names: "[FAMILY NAME]"
+    given-names: "[GIVEN NAME]"
+version: "[RELEASE VERSION]"
+date-released: "[YYYY-MM-DD]"
+repository-code: "[GITHUB URL]"
+doi: "[ARCHIVE DOI, IF ASSIGNED]"
+license: "[LICENCE AFTER REVIEW]"
+

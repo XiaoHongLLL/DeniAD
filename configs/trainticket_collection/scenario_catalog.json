@@ -1,0 +1,140 @@
+{
+  "benchmark": "scwarn_trainticket_kubernetes_pilot",
+  "system": "Train-Ticket",
+  "orchestration": "Kubernetes",
+  "oov_policy": {
+    "mode": "fixed_hash_bucket",
+    "num_buckets": 256,
+    "hash": "sha256(normalized_template) % num_buckets",
+    "notes": "Do not dynamically add trainable test-time template IDs."
+  },
+  "phases": [
+    "pre_change_stable",
+    "deployment_transition",
+    "post_change_stable",
+    "post_change_failure_observation",
+    "rollback_cleanup"
+  ],
+  "pilot_scenarios": [
+    {
+      "change_family_id": "baseline",
+      "implementation_id": "baseline_no_change_v1",
+      "semantic_label": "expected",
+      "benchmark_role": "baseline_normal",
+      "runs": 10,
+      "description": "No change. Repeated fixed workload to estimate natural log variation."
+    },
+    {
+      "change_family_id": "noop_redeployment",
+      "implementation_id": "noop_same_image_same_config_v1",
+      "semantic_label": "expected",
+      "benchmark_role": "no_op_control",
+      "runs": 5,
+      "description": "Rolling redeployment with exactly the same image, config, and workload."
+    },
+    {
+      "change_family_id": "expected_resource_scale",
+      "implementation_id": "scale_travel_service_replicas_1_to_2_v1",
+      "semantic_label": "expected",
+      "benchmark_role": "candidate_expected_change",
+      "runs": 5,
+      "service": "ts-travel-service",
+      "description": "Scale a service replica count while API assertions and SLO remain valid."
+    },
+    {
+      "change_family_id": "expected_config_pool",
+      "implementation_id": "increase_order_db_pool_v1",
+      "semantic_label": "expected",
+      "benchmark_role": "candidate_expected_change",
+      "runs": 5,
+      "service": "ts-order-service",
+      "description": "Apply a valid connection-pool adjustment."
+    },
+    {
+      "change_family_id": "expected_compatible_version",
+      "implementation_id": "compatible_mongo_or_service_image_upgrade_v1",
+      "semantic_label": "expected",
+      "benchmark_role": "candidate_expected_change",
+      "runs": 5,
+      "description": "Upgrade a dependency/image to a preverified compatible version."
+    },
+    {
+      "change_family_id": "expected_workload_mix",
+      "implementation_id": "w1_to_price_query_heavy_v1",
+      "semantic_label": "expected",
+      "benchmark_role": "candidate_expected_change",
+      "runs": 5,
+      "component_id": "workload_profile",
+      "description": "Change request mix from W1_steady_core to W1_price_query_heavy while all functional assertions pass; report separately as Operational/Workload Expected Drift."
+    },
+    {
+      "change_family_id": "expected_workload_mix",
+      "implementation_id": "w1_to_route_query_heavy_v1",
+      "semantic_label": "expected",
+      "benchmark_role": "candidate_expected_change",
+      "runs": 5,
+      "component_id": "workload_profile",
+      "description": "Change request mix from W1_steady_core to W1_route_query_heavy while all functional assertions pass; report separately as Operational/Workload Expected Drift."
+    },
+    {
+      "change_family_id": "expected_workload_mix",
+      "implementation_id": "w1_to_train_station_query_heavy_v1",
+      "semantic_label": "expected",
+      "benchmark_role": "candidate_expected_change",
+      "runs": 5,
+      "component_id": "workload_profile",
+      "description": "Change request mix from W1_steady_core to W1_train_station_query_heavy while all functional assertions pass; report separately as Operational/Workload Expected Drift."
+    },
+    {
+      "change_family_id": "unexpected_bad_port",
+      "implementation_id": "order_service_wrong_db_port_v1",
+      "semantic_label": "unexpected",
+      "benchmark_role": "candidate_unexpected_change",
+      "runs": 5,
+      "service": "ts-order-service",
+      "expected_failure_mode": "dependency_connection_failure",
+      "description": "Configure a wrong service/database port."
+    },
+    {
+      "change_family_id": "unexpected_service_termination",
+      "implementation_id": "price_replicas_1_to_0_v1",
+      "semantic_label": "unexpected",
+      "benchmark_role": "candidate_unexpected_change",
+      "runs": 5,
+      "service": "ts-price-service",
+      "component_id": "ts-price-service",
+      "expected_failure_mode": "runtime_service_unavailable",
+      "description": "Scale price-service to zero replicas after a stable pre-change phase; this is a low-OOV runtime failure candidate, not a CrashLoop template flood."
+    },
+    {
+      "change_family_id": "unexpected_resource_limit",
+      "implementation_id": "travel_service_cpu_or_memory_too_small_v1",
+      "semantic_label": "unexpected",
+      "benchmark_role": "candidate_unexpected_change",
+      "runs": 5,
+      "service": "ts-travel-service",
+      "expected_failure_mode": "slo_violation_or_oom",
+      "description": "Apply too-small CPU or memory limits."
+    },
+    {
+      "change_family_id": "unexpected_slow_path",
+      "implementation_id": "order_service_delay_or_slow_sql_v1",
+      "semantic_label": "unexpected",
+      "benchmark_role": "candidate_unexpected_change",
+      "runs": 5,
+      "service": "ts-order-service",
+      "expected_failure_mode": "latency_slo_violation",
+      "description": "Inject program delay or slow SQL while workload continues."
+    },
+    {
+      "change_family_id": "unexpected_pool_exhaustion",
+      "implementation_id": "order_connection_pool_exhaustion_v1",
+      "semantic_label": "unexpected",
+      "benchmark_role": "candidate_unexpected_change",
+      "runs": 5,
+      "service": "ts-order-service",
+      "expected_failure_mode": "transaction_failure",
+      "description": "Set connection pool too small or terminate a dependent service."
+    }
+  ]
+}
